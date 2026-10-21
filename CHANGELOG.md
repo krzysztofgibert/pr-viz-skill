@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.16 — 2026-10-21
+
+Matches viewer image `gprojekt/pr-viz:0.1.16`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Rename the skill link and the two ways to post a comment. (#10)
+
+
 ## 0.1.15 — 2026-10-21
 
 Matches viewer image `gprojekt/pr-viz:0.1.15`.
