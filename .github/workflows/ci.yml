@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Skill files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Required community files
+        run: |
+          set -euo pipefail
+          test -f README.md
+          test -f LICENSE
+          test -f CHANGELOG.md
+          test -f SKILL.md
+          test -f install.sh
+          test -f .cursorrules
+          test -f .windsurfrules
+          test -f .gitignore
+          test -f skills/pr-viz/SKILL.md
+          test -f skills/pr-viz/host.json
+          test -f .github/skills/pr-viz/SKILL.md
+          test -f .cursor/skills/pr-viz/SKILL.md
+          test -f .claude/skills/pr-viz/SKILL.md
+          test -f .windsurf/skills/pr-viz/SKILL.md
+          for file in skills/pr-viz/scripts/*.mjs; do
+            node --check "$file"
+          done
+          node skills/pr-viz/scripts/parse-pr-url.mjs https://github.com/acme/app/pull/12 | grep -q '"number":12'

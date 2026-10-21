@@ -1,0 +1,10 @@
+# /pr-viz
+# Community skill: https://github.com/krzysztofgibert/pr-viz-skill
+# Viewer: https://pr-viz.com
+
+When the user runs /pr-viz, or asks to visualize, map, or review a GitHub pull
+request, follow skills/pr-viz/SKILL.md in full.
+
+Publish the map with skills/pr-viz/scripts/publish-diagram.mjs to the viewer in
+skills/pr-viz/host.json. Do not paste the review, Mermaid, or ASCII in the chat.
+Do not ask for or handle a GitHub token.

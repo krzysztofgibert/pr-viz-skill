@@ -1,0 +1,189 @@
+#!/usr/bin/env node
+/**
+ * Work out what /pr-viz needs for one PR and exactly what (if anything) to ask
+ * the user. Never reads, prints, or asks for GitHub tokens.
+ *
+ * Usage: node skills/pr-viz/scripts/preflight.mjs <github-pr-url>
+ * Prints JSON: { ok, ask[], fetch, pr, server, github }
+ *   ok     true when nothing needs the user
+ *   ask    exact requests for the user (empty = ask nothing)
+ *   fetch  "gh" (GitHub CLI) | "rest" (public REST API) | null
+ */
+import { execFile } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const MIN_NODE_MAJOR = 18
+const DOCKER_RUN =
+  'docker run --rm -p 8080:8080 -v pr-viz-data:/var/lib/pr-viz/diagrams gprojekt/pr-viz:latest'
+
+function run(cmd, args, timeoutMs = 15_000) {
+  return new Promise((resolve) => {
+    execFile(cmd, args, { timeout: timeoutMs, windowsHide: true }, (error, stdout, stderr) => {
+      resolve({
+        ok: !error,
+        missing: error?.code === 'ENOENT',
+        stdout: String(stdout || ''),
+        stderr: String(stderr || ''),
+      })
+    })
+  })
+}
+
+async function getJson(url, timeoutMs) {
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'pr-viz-preflight' },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    const text = res.ok ? '' : (await res.text().catch(() => '')).slice(0, 300)
+    return { status: res.status, headers: res.headers, text }
+  } catch {
+    return { status: 0, headers: new Headers(), text: '' }
+  }
+}
+
+function parsePrUrl(raw) {
+  const match = String(raw || '')
+    .trim()
+    .match(/^https?:\/\/([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?\/pull\/(\d+)(?:\/[^?#]*)?\/?(?:[?#].*)?$/i)
+  if (!match) return null
+  const [, host, owner, repo, number] = match
+  return {
+    host: host.toLowerCase(),
+    owner,
+    repo: repo.replace(/\.git$/i, ''),
+    number: Number(number),
+    url: `https://${host.toLowerCase()}/${owner}/${repo.replace(/\.git$/i, '')}/pull/${number}`,
+  }
+}
+
+function apiBase(host) {
+  if (host === 'github.com') return 'https://api.github.com'
+  if (host.endsWith('.ghe.com')) return `https://api.${host}`
+  return `https://${host}/api/v3`
+}
+
+function serverBase() {
+  const fromEnv = String(process.env.PR_VIZ_BASE_URL || '').trim()
+  if (fromEnv) return fromEnv.replace(/\/+$/, '')
+  try {
+    const hostFile = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'host.json')
+    const raw = JSON.parse(fs.readFileSync(hostFile, 'utf8'))
+    if (typeof raw?.baseUrl === 'string' && raw.baseUrl.trim()) {
+      return raw.baseUrl.trim().replace(/\/+$/, '')
+    }
+  } catch {
+    /* no host.json */
+  }
+  return 'http://127.0.0.1:8080'
+}
+
+const out = {
+  ok: false,
+  ask: [],
+  fetch: null,
+  pr: null,
+  server: { url: serverBase(), reachable: false },
+  github: { api: null, public: null, gh: { installed: false, authenticated: false, canRead: null } },
+}
+
+const nodeMajor = Number(process.versions.node.split('.')[0])
+if (nodeMajor < MIN_NODE_MAJOR) {
+  out.ask.push(
+    `Your Node.js is ${process.versions.node}; /pr-viz needs Node.js ${MIN_NODE_MAJOR} or newer (https://nodejs.org). Please upgrade and tell me when done.`,
+  )
+}
+
+const pr = parsePrUrl(process.argv[2])
+if (!pr) {
+  out.ask.push(
+    'Please send a GitHub pull request link like https://github.com/owner/repo/pull/123.',
+  )
+  console.log(JSON.stringify(out, null, 2))
+  process.exit(0)
+}
+out.pr = pr
+out.github.api = apiBase(pr.host)
+
+const health = await getJson(`${out.server.url}/api/health`, 4000)
+out.server.reachable = health.status === 200
+if (health.status === 403 && /PR_VIZ_ALLOWED_HOSTS/.test(health.text)) {
+  const host = new URL(out.server.url).hostname
+  out.ask.push(
+    `PR Viz at ${out.server.url} refuses its own host name. Please ask whoever runs it to set PR_VIZ_ALLOWED_HOSTS=${host} on the server, then tell me when done.`,
+  )
+} else if (!out.server.reachable) {
+  out.ask.push(
+    `PR Viz isn't reachable at ${out.server.url}. Start it (on your machine: \`${DOCKER_RUN}\`), or tell me the URL of your team's PR Viz.`,
+  )
+}
+
+const anon = await getJson(
+  `${out.github.api}/repos/${encodeURIComponent(pr.owner)}/${encodeURIComponent(pr.repo)}/pulls/${pr.number}`,
+  6000,
+)
+const rateLimited =
+  (anon.status === 403 || anon.status === 429) &&
+  (anon.headers.get('x-ratelimit-remaining') === '0' || anon.headers.has('retry-after'))
+if (anon.status === 200) out.github.public = true
+else if (anon.status === 404 || (anon.status === 403 && !rateLimited)) out.github.public = false
+
+const ghVersion = await run('gh', ['--version'], 5000)
+out.github.gh.installed = ghVersion.ok
+if (ghVersion.ok) {
+  const status = await run('gh', ['auth', 'status', '--hostname', pr.host], 8000)
+  out.github.gh.authenticated = status.ok
+  if (status.ok && out.github.public !== true) {
+    const view = await run('gh', [
+      'api',
+      '--hostname',
+      pr.host,
+      `repos/${pr.owner}/${pr.repo}/pulls/${pr.number}`,
+      '--jq',
+      '.number',
+    ])
+    out.github.gh.canRead = view.ok
+    out.github.gh.readError = view.ok ? undefined : (view.stderr.trim().split('\n').pop() || '').slice(0, 300)
+  }
+}
+
+const ghReady = out.github.gh.authenticated
+const install = `Install GitHub CLI (https://cli.github.com) and run \`gh auth login --hostname ${pr.host}\``
+
+if (out.github.public === true) {
+  out.fetch = ghReady ? 'gh' : 'rest'
+} else if (out.github.public === false) {
+  if (!out.github.gh.installed) {
+    out.ask.push(
+      `This PR is private (or the link is wrong). To read it, ${install.charAt(0).toLowerCase()}${install.slice(1)}, then tell me when done.`,
+    )
+  } else if (!ghReady) {
+    out.ask.push(
+      `GitHub CLI isn't logged in to ${pr.host}. Please run \`gh auth login --hostname ${pr.host}\` and tell me when done.`,
+    )
+  } else if (out.github.gh.canRead === false) {
+    const sso = /saml|sso/i.test(out.github.gh.readError || '')
+    out.ask.push(
+      sso
+        ? `Your GitHub CLI login can't open this PR because your organization uses SSO. Please run \`gh auth refresh --hostname ${pr.host}\` (and approve SSO in the browser), then tell me when done.`
+        : `Your GitHub CLI login can't open this PR (${out.github.gh.readError || 'not found'}). Please check you have access to ${pr.owner}/${pr.repo} and that the link is right, then tell me.`,
+    )
+  } else {
+    out.fetch = 'gh'
+  }
+} else if (ghReady) {
+  out.fetch = 'gh'
+} else if (rateLimited) {
+  out.ask.push(
+    `GitHub's anonymous API limit is used up for now. ${install} so I can read the PR, or try again in about an hour.`,
+  )
+} else {
+  out.ask.push(
+    `I couldn't reach ${out.github.api}. Check your network or VPN — or ${install.charAt(0).toLowerCase()}${install.slice(1)} — then tell me when done.`,
+  )
+}
+
+out.ok = out.ask.length === 0
+console.log(JSON.stringify(out, null, 2))

@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Skill release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check scripts
+        run: |
+          set -euo pipefail
+          for file in skills/pr-viz/scripts/*.mjs; do
+            node --check "$file"
+          done
+      - name: Notes for this tag
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          awk -v ver="$ver" '
+            $0 ~ "^## " ver "( |$)" { found = 1; next }
+            found && $0 ~ "^## " { exit }
+            found { print }
+          ' CHANGELOG.md > /tmp/skill-notes.md
+          if ! grep -q '[^[:space:]]' /tmp/skill-notes.md; then
+            {
+              echo "Skill ${GITHUB_REF_NAME}"
+              echo
+              echo "Viewer: https://pr-viz.com"
+              echo "Image: https://hub.docker.com/r/gprojekt/pr-viz"
+            } > /tmp/skill-notes.md
+          fi
+      - name: Zip the skill
+        run: |
+          set -euo pipefail
+          zip -r "/tmp/pr-viz-skill-${GITHUB_REF_NAME}.zip" \
+            README.md LICENSE CHANGELOG.md SKILL.md install.sh \
+            .cursorrules .windsurfrules \
+            skills \
+            .agents \
+            .cursor \
+            .claude \
+            .windsurf \
+            .continue \
+            .github/skills
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: /tmp/skill-notes.md
+          files: /tmp/pr-viz-skill-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
