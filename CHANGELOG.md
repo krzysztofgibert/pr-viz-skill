@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.19 — 2026-10-22
+
+Matches viewer image `gprojekt/pr-viz:0.1.19`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Brand the viewer and add Cloudflare Web Analytics (#13)
+
+
 ## 0.1.18 — 2026-10-22
 
 Matches viewer image `gprojekt/pr-viz:0.1.18`.

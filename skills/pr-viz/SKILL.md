@@ -98,7 +98,8 @@ Opens the **OS default browser** (not IDE Simple Browser). Pass `--no-open` or
 
 6. **Respond** — Output **only** the returned URL in backticks plus a 1–2
    sentence summary of the severe findings (counts / top severities). Do not
-   dump full JSON.
+   dump full JSON. Do not add a footer, signature, or pr-viz.com line — the
+   viewer draws that mark, and Export PNG bakes it into the image.
 
 Manual open if needed:
 
@@ -178,7 +179,7 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
   still include real `diff`/`snippet`
 - Every block: `title`, `description`, `filePath`, `reviewPaste`, `explainPrompt`.
   `reviewPaste` = a **real draft PR comment**, never filler like
-  `AI-accepted: … skim only`.
+  `AI-accepted: … skim only`. Do not sign it, or any comment, with pr-viz.com.
 - Prefer `diff: [{ kind, text, lineNumber? }]` over `snippet`
 - **Class + function on code blocks.** Set `className` + `functionName` from
   real identifiers.
@@ -250,5 +251,6 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
   to the PR Viz web app and open the system browser
 - Do not invent or paraphrase code; do not drop changed files
 - Do not dump full diagram JSON in chat (URL + short summary only)
+- Do not spend reply tokens on a branding footer or signature
 - Do not change ports, theme, buttons, or scripts via personal IDE settings
 - Do not treat this skill as a substitute for human review judgment
