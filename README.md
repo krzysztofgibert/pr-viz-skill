@@ -81,6 +81,21 @@ skill says what is missing before it asks you for anything.
 `.cursorrules` and `.windsurfrules` point the agent at
 [`skills/pr-viz/SKILL.md`](skills/pr-viz/SKILL.md).
 
+## Verify the viewer image
+
+Each release signs `gprojekt/pr-viz` with Cosign. The matching public key is
+[`cosign.pub`](cosign.pub) in this repository and
+[pr-viz.com/cosign.pub](https://pr-viz.com/cosign.pub). The private key is not
+in this repository.
+
+```bash
+cosign verify --key cosign.pub --insecure-ignore-tlog=true gprojekt/pr-viz:<version>
+```
+
+Use the tag you pulled. `--insecure-ignore-tlog` skips the public Sigstore
+transparency log, so the check works on an air-gapped network. Trust is the
+public key above.
+
 ## Your own viewer
 
 ```bash

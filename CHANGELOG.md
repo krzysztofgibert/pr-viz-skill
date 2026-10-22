@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.18 — 2026-10-22
+
+Matches viewer image `gprojekt/pr-viz:0.1.18`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Pin the release signer to Cosign 2.4.3. (#12)
+
+
 ## 0.1.16 — 2026-10-21
 
 Matches viewer image `gprojekt/pr-viz:0.1.16`.
