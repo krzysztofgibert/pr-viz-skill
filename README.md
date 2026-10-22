@@ -7,6 +7,10 @@ request. The map opens at [pr-viz.com](https://pr-viz.com) or on a viewer you ru
 [![Skill release](https://img.shields.io/github/v/release/krzysztofgibert/pr-viz-skill?label=skill)](https://github.com/krzysztofgibert/pr-viz-skill/releases)
 [![Viewer image](https://img.shields.io/docker/v/gprojekt/pr-viz/latest?label=viewer)](https://hub.docker.com/r/gprojekt/pr-viz)
 
+![PR Viz sample review map](docs/demo.gif)
+
+Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample)
+
 ## Where to find PR Viz
 
 | | |
