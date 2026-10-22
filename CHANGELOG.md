@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.20 — 2026-10-22
+
+Matches viewer image `gprojekt/pr-viz:0.1.20`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Name the image Free to Run and the viewer Source Closed. (#14)
+
+
 ## 0.1.19 — 2026-10-22
 
 Matches viewer image `gprojekt/pr-viz:0.1.19`.

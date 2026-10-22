@@ -122,4 +122,9 @@ replaced by the next release. An issue is the request that stays put.
 
 ## License
 
-[MIT](LICENSE). The viewer image is a separate artifact.
+This repository is [MIT](LICENSE). You may use, copy, and modify the skill.
+
+The viewer image `gprojekt/pr-viz` is Free to Run: free to download and run,
+including an unchanged copy in a private registry. The viewer is Source Closed.
+Its source is not in this repository. You may not copy or modify that source,
+and you may not publish a changed image as your own product.
