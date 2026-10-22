@@ -1,3 +1,5 @@
 {
-  "baseUrl": "https://pr-viz.com"
+  "baseUrl": "https://pr-viz.com",
+  "viewerMinVersion": "0.1.21",
+  "skillVersion": "0.1.21"
 }

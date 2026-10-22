@@ -7,9 +7,11 @@ request. The map opens at [pr-viz.com](https://pr-viz.com) or on a viewer you ru
 [![Skill release](https://img.shields.io/github/v/release/krzysztofgibert/pr-viz-skill?label=skill)](https://github.com/krzysztofgibert/pr-viz-skill/releases)
 [![Viewer image](https://img.shields.io/docker/v/gprojekt/pr-viz/latest?label=viewer)](https://hub.docker.com/r/gprojekt/pr-viz)
 
-![PR Viz sample review map](docs/demo.gif)
+<video src="docs/demo.mp4" controls muted autoplay loop playsinline width="100%" poster="docs/demo.gif">
+  <a href="docs/demo.mp4">PR Viz demo video</a>
+</video>
 
-Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample)
+Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample) · [download MP4](docs/demo.mp4)
 
 ## Where to find PR Viz
 
@@ -37,10 +39,22 @@ From the project where you want the skill:
 curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/main/install.sh | bash
 ```
 
+`install.sh` always copies `skills/pr-viz/`, then **auto-detects** which IDE
+adapters to add from project folders (`.cursor`, `.claude`, `.windsurf`, …)
+and common editor environment variables. If nothing matches, it installs every
+adapter so a shared team repo still works. Narrow or expand with a second
+argument:
+
+```bash
+./install.sh /path/to/your/project cursor     # only Cursor
+./install.sh /path/to/your/project all        # every IDE
+./install.sh /path/to/your/project vscode     # VS Code / Copilot (.github/skills)
+```
+
 Pin a release:
 
 ```bash
-PR_VIZ_SKILL_REF=v0.1.10 curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/v0.1.10/install.sh | bash
+PR_VIZ_SKILL_REF=v0.1.21 curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/v0.1.21/install.sh | bash
 ```
 
 Or clone and install from the checkout:
@@ -51,8 +65,8 @@ cd pr-viz-skill
 ./install.sh /path/to/your/project
 ```
 
-`install.sh` copies `skills/pr-viz/`, the IDE adapter folders, `.cursorrules`,
-and `.windsurfrules`. It does not copy this repo's CI workflows into your project.
+It does not copy this repo's CI workflows into your project. After install it
+prints a Watch releases link for skill updates.
 
 A self-hosted viewer can also offer **Download skill for this host**
 (`/api/skill-pack.zip`). That zip is the same skill with `host.json` already

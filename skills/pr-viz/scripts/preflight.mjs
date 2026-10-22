@@ -13,10 +13,12 @@ import { execFile } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { compareSemver } from '../lib/semver.mjs'
 
 const MIN_NODE_MAJOR = 18
 const DOCKER_RUN =
   'docker run --rm -p 8080:8080 -v pr-viz-data:/var/lib/pr-viz/diagrams gprojekt/pr-viz:latest'
+const INSTALL_PAGE = 'https://pr-viz.com/install'
 
 function run(cmd, args, timeoutMs = 15_000) {
   return new Promise((resolve) => {
@@ -31,16 +33,38 @@ function run(cmd, args, timeoutMs = 15_000) {
   })
 }
 
-async function getJson(url, timeoutMs) {
+async function getJson(url, timeoutMs, accept = 'application/vnd.github+json') {
   try {
     const res = await fetch(url, {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'pr-viz-preflight' },
+      headers: { Accept: accept, 'User-Agent': 'pr-viz-preflight' },
       signal: AbortSignal.timeout(timeoutMs),
     })
-    const text = res.ok ? '' : (await res.text().catch(() => '')).slice(0, 300)
-    return { status: res.status, headers: res.headers, text }
+    const raw = await res.text().catch(() => '')
+    let json = null
+    if (raw) {
+      try {
+        json = JSON.parse(raw)
+      } catch {
+        /* not JSON */
+      }
+    }
+    return {
+      status: res.status,
+      headers: res.headers,
+      text: res.ok ? '' : raw.slice(0, 300),
+      json,
+    }
   } catch {
-    return { status: 0, headers: new Headers(), text: '' }
+    return { status: 0, headers: new Headers(), text: '', json: null }
+  }
+}
+
+function readHostMeta() {
+  try {
+    const hostFile = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'host.json')
+    return JSON.parse(fs.readFileSync(hostFile, 'utf8'))
+  } catch {
+    return {}
   }
 }
 
@@ -80,12 +104,19 @@ function serverBase() {
   return 'http://127.0.0.1:8080'
 }
 
+const hostMeta = readHostMeta()
 const out = {
   ok: false,
   ask: [],
   fetch: null,
   pr: null,
-  server: { url: serverBase(), reachable: false },
+  server: {
+    url: serverBase(),
+    reachable: false,
+    version: null,
+    viewerMinVersion:
+      typeof hostMeta.viewerMinVersion === 'string' ? hostMeta.viewerMinVersion : null,
+  },
   github: { api: null, public: null, gh: { installed: false, authenticated: false, canRead: null } },
 }
 
@@ -107,8 +138,11 @@ if (!pr) {
 out.pr = pr
 out.github.api = apiBase(pr.host)
 
-const health = await getJson(`${out.server.url}/api/health`, 4000)
+const health = await getJson(`${out.server.url}/api/health`, 4000, 'application/json')
 out.server.reachable = health.status === 200
+if (health.status === 200 && health.json && typeof health.json.version === 'string') {
+  out.server.version = health.json.version.replace(/^v/, '')
+}
 if (health.status === 403 && /PR_VIZ_ALLOWED_HOSTS/.test(health.text)) {
   const host = new URL(out.server.url).hostname
   out.ask.push(
@@ -117,6 +151,14 @@ if (health.status === 403 && /PR_VIZ_ALLOWED_HOSTS/.test(health.text)) {
 } else if (!out.server.reachable) {
   out.ask.push(
     `PR Viz isn't reachable at ${out.server.url}. Start it (on your machine: \`${DOCKER_RUN}\`), or tell me the URL of your team's PR Viz.`,
+  )
+} else if (
+  out.server.viewerMinVersion &&
+  out.server.version &&
+  compareSemver(out.server.version, out.server.viewerMinVersion) < 0
+) {
+  out.ask.push(
+    `This skill pack expects viewer ${out.server.viewerMinVersion}+, but ${out.server.url} is running ${out.server.version}. Please update the image (\`docker pull gprojekt/pr-viz:latest\`) or reinstall the skill from ${INSTALL_PAGE}, then tell me when done.`,
   )
 }
 
