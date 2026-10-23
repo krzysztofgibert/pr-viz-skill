@@ -2,8 +2,7 @@
 
 All changes land through a pull request. Direct pushes to `main` are blocked.
 
-**Only [@krzysztofgibert](https://github.com/krzysztofgibert) may approve and merge.**
-Automated publish opens a `publish/v*` PR and stops — it does not merge.
+**[@krzysztofgibert](https://github.com/krzysztofgibert) or [@hyurii](https://github.com/hyurii)** may approve and merge (including their own PRs). Automated publish opens a `publish/v*` PR and stops — it does not merge.
 
 Before merge, CI must be green:
 
