@@ -55,7 +55,7 @@ jobs:
             .continue \
             .github/skills
       - name: GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: /tmp/skill-notes.md
           files: /tmp/pr-viz-skill-${{ github.ref_name }}.zip
