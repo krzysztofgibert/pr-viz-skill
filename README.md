@@ -9,12 +9,7 @@ request. The map opens at [pr-viz.com](https://pr-viz.com) or on a viewer you ru
 
 ![PR Viz sample review map](docs/demo.gif)
 
-GitHub README only autoplays GIFs (it strips `<video>` tags). Same tour as MP4:
-
-- [Watch on GitHub (built-in player)](https://github.com/krzysztofgibert/pr-viz-skill/blob/main/docs/demo.mp4)
-- [Watch on Pages](https://krzysztofgibert.github.io/pr-viz-skill/) (HTML player)
-- [Download MP4](docs/demo.mp4)
-- Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample)
+Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample) · [MP4 on Pages](https://krzysztofgibert.github.io/pr-viz-skill/)
 
 ## Where to find PR Viz
 

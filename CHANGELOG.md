@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.23 — 2026-10-23
+
+Matches viewer image `gprojekt/pr-viz:0.1.23`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Add the test:e2e:all script the release workflow expects. (#20)
+
+
 ## 0.1.21 — 2026-10-22
 
 Matches viewer image `gprojekt/pr-viz:0.1.21`.
