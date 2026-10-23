@@ -2,11 +2,17 @@ name: CI
 
 on:
   pull_request:
+    branches: [main]
   push:
     branches: [main]
 
 permissions:
   contents: read
+  security-events: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -24,6 +30,7 @@ jobs:
           test -f README.md
           test -f LICENSE
           test -f CHANGELOG.md
+          test -f CONTRIBUTING.md
           test -f SKILL.md
           test -f install.sh
           test -f .cursorrules
@@ -39,3 +46,65 @@ jobs:
             node --check "$file"
           done
           node skills/pr-viz/scripts/parse-pr-url.mjs https://github.com/acme/app/pull/12 | grep -q '"number":12'
+          python3 -m json.tool skills/pr-viz/host.json >/dev/null
+          # install.sh must stay LF — Windows CRLF breaks `curl | bash` shebang lines.
+          # Keep this as one line: a flush-left heredoc body ends the YAML `|` block.
+          python3 -c 'from pathlib import Path; d=Path("install.sh").read_bytes(); raise SystemExit("install.sh must use LF line endings" if b"\r" in d else 0)'
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: Lint install.sh
+        run: shellcheck -x install.sh
+
+  actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint workflows
+        run: |
+          set -euo pipefail
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  security:
+    name: Security scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trivy filesystem (vuln, secret, misconfig)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+          skip-dirs: docs
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3

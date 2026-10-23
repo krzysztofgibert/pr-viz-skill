@@ -24,10 +24,10 @@ SKILL_WATCH="https://github.com/krzysztofgibert/pr-viz-skill"
 SKILL_WATCH_HINT="Watch releases: ${SKILL_WATCH}/subscription (Watch → Custom → Releases)"
 
 copy_tree() {
-  local rel="$1"
-  mkdir -p "${dest}/$(dirname "$rel")"
-  rm -rf "${dest}/${rel}"
-  cp -a "${src}/${rel}" "${dest}/${rel}"
+  local rel="${1:?rel required}"
+  mkdir -p "${dest:?}/$(dirname "$rel")"
+  rm -rf "${dest:?}/${rel}"
+  cp -a "${src:?}/${rel}" "${dest}/${rel}"
 }
 
 detect_ides() {
