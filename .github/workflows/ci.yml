@@ -31,6 +31,7 @@ jobs:
           test -f LICENSE
           test -f CHANGELOG.md
           test -f CONTRIBUTING.md
+          test -f .github/CODEOWNERS
           test -f SKILL.md
           test -f install.sh
           test -f .cursorrules
@@ -42,7 +43,7 @@ jobs:
           test -f .cursor/skills/pr-viz/SKILL.md
           test -f .claude/skills/pr-viz/SKILL.md
           test -f .windsurf/skills/pr-viz/SKILL.md
-          for file in skills/pr-viz/scripts/*.mjs; do
+          for file in skills/pr-viz/scripts/*.mjs skills/pr-viz/lib/*.mjs; do
             node --check "$file"
           done
           node skills/pr-viz/scripts/parse-pr-url.mjs https://github.com/acme/app/pull/12 | grep -q '"number":12'
@@ -50,6 +51,18 @@ jobs:
           # install.sh must stay LF — Windows CRLF breaks `curl | bash` shebang lines.
           # Keep this as one line: a flush-left heredoc body ends the YAML `|` block.
           python3 -c 'from pathlib import Path; d=Path("install.sh").read_bytes(); raise SystemExit("install.sh must use LF line endings" if b"\r" in d else 0)'
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run skill unit and CLI tests
+        run: npm test
 
   shellcheck:
     name: ShellCheck
@@ -108,3 +121,58 @@ jobs:
           languages: javascript
           build-mode: none
       - uses: github/codeql-action/analyze@v3
+
+  # Optional — set SNYK_TOKEN on krzysztofgibert/pr-viz-skill. Uses Snyk Code
+  # (no package lock / OSS deps in this repo).
+  snyk:
+    name: Snyk
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - id: gate
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -n "$SNYK_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "SNYK_TOKEN is not set; Snyk is skipped"
+          fi
+      - if: steps.gate.outputs.enabled == 'true'
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+          args: --severity-threshold=high
+
+  # Optional — set SONAR_TOKEN (+ SONAR_HOST_URL, and SONAR_ORGANIZATION for SonarCloud).
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: gate
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "SONAR_TOKEN is not set; SonarQube is skipped"
+          fi
+      - if: steps.gate.outputs.enabled == 'true'
+        name: SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}

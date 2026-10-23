@@ -13,6 +13,7 @@ import { execFile } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parsePrUrl } from '../lib/parse-pr-url.mjs'
 import { compareSemver } from '../lib/semver.mjs'
 
 const MIN_NODE_MAJOR = 18
@@ -65,21 +66,6 @@ function readHostMeta() {
     return JSON.parse(fs.readFileSync(hostFile, 'utf8'))
   } catch {
     return {}
-  }
-}
-
-function parsePrUrl(raw) {
-  const match = String(raw || '')
-    .trim()
-    .match(/^https?:\/\/([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?\/pull\/(\d+)(?:\/[^?#]*)?\/?(?:[?#].*)?$/i)
-  if (!match) return null
-  const [, host, owner, repo, number] = match
-  return {
-    host: host.toLowerCase(),
-    owner,
-    repo: repo.replace(/\.git$/i, ''),
-    number: Number(number),
-    url: `https://${host.toLowerCase()}/${owner}/${repo.replace(/\.git$/i, '')}/pull/${number}`,
   }
 }
 
