@@ -1,5 +1,29 @@
 # Release notes
 
+## 0.1.24 — 2026-10-23
+
+Matches viewer image `gprojekt/pr-viz:0.1.24`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #32 from hyurii/seo-ide-sections-and-headings
+- Move IDE guides to Docs; restore home hero copy
+- Add light IDE long-tail pages and skill About homepage
+- Add SEO meta/OG/JSON-LD and bump skill Actions majors (#31)
+- fix: keep curl -d on same invocation in skill-governance (#30)
+- fix: hyurii maintain access on skill repo (#29)
+- Allow either owner to self-approve skill PRs (#28)
+- Require owner approval before merge (no bot merge) (#27)
+- fix: treat missing skill PR checks as pending (#26)
+- fix: force-with-lease when updating skill publish branches (#25)
+- fix: keep skill CI LF check YAML-safe (#24)
+- fix: use dismiss_stale_reviews_on_push in skill ruleset (#23)
+- Secure the skill repo with CI scans and PR-only main (#22)
+- fix: install ffmpeg via setup-ffmpeg in publish-skill (#21)
+
+
 ## 0.1.23 — 2026-10-23
 
 Matches viewer image `gprojekt/pr-viz:0.1.23`.
