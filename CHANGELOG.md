@@ -1,5 +1,25 @@
 # Release notes
 
+## 0.1.25 — 2026-10-27
+
+Matches viewer image `gprojekt/pr-viz:0.1.25`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #38 from hyurii/chore/seo-og-logos
+- Add brand OG image and logo PNGs for directories and social previews.
+- Merge pull request #37 from hyurii/fix/private-pr-hosted-viewer-consent
+- Ask before publishing private PRs to pr-viz.com.
+- Merge pull request #35 from hyurii/fix/packaging-sonar-v8
+- Align packaging Sonar action with skill-repo v8.
+- Merge pull request #34 from hyurii/fix/admin-only-ruleset-bypass
+- Limit skill-repo ruleset bypass to Admin only.
+- Merge pull request #33 from hyurii/fix/skill-owner-merge-bypass
+- Allow skill-repo owners to merge their own PRs via ruleset bypass.
+
+
 ## 0.1.24 — 2026-10-23
 
 Matches viewer image `gprojekt/pr-viz:0.1.24`.

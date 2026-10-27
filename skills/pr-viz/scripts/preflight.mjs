@@ -15,6 +15,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parsePrUrl } from '../lib/parse-pr-url.mjs'
 import { compareSemver } from '../lib/semver.mjs'
+import { envFlagTrue, isPrVizComViewer } from '../lib/viewer-host.mjs'
 
 const MIN_NODE_MAJOR = 18
 const DOCKER_RUN =
@@ -210,6 +211,19 @@ if (out.github.public === true) {
 } else {
   out.ask.push(
     `I couldn't reach ${out.github.api}. Check your network or VPN — or ${install.charAt(0).toLowerCase()}${install.slice(1)} — then tell me when done.`,
+  )
+}
+
+// Private PR + public pr-viz.com viewer → explicit consent (diagram JSON may
+// include short code excerpts). Other viewers (self-host / localhost) → no ask.
+// Public PRs → no ask for any viewer.
+if (
+  out.github.public === false &&
+  isPrVizComViewer(out.server.url) &&
+  !envFlagTrue('PR_VIZ_ALLOW_HOSTED_VIEWER')
+) {
+  out.ask.push(
+    `This PR looks private (or is not anonymously readable) and the skill pack publishes to ${out.server.url}. Diagram JSON may include short code excerpts. Reply yes to allow publishing there for this session (I will re-run preflight with PR_VIZ_ALLOW_HOSTED_VIEWER=1), or point skills/pr-viz/host.json / PR_VIZ_BASE_URL at your self-hosted viewer and tell me when ready.`,
   )
 }
 
