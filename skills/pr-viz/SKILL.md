@@ -54,6 +54,14 @@ node skills/pr-viz/scripts/preflight.mjs "$PR_URL"
   that isn't in `ask` (for example, don't ask for GitHub CLI on a public PR).
 - If `ask` is empty, ask nothing and continue. Use `pr` for owner / repo /
   number, `fetch` to pick how to read the PR, and `github.api` as the REST base.
+- **Viewer privacy (preflight enforces):**
+  - Public PR + any viewer → no extra question.
+  - Private / non-anonymous PR + viewer host `pr-viz.com` → preflight asks for
+    consent. After the user says yes, re-run preflight with
+    `PR_VIZ_ALLOW_HOSTED_VIEWER=1`. Prefer pointing `host.json` /
+    `PR_VIZ_BASE_URL` at a self-hosted viewer instead.
+  - Private PR + any other viewer (self-host, localhost, company URL) → no
+    extra question.
 - **Never ask for, accept, store, or print a GitHub token** in chat, files, or
   commands. The web app posts comments itself (see *Posting from the app*).
 
@@ -131,6 +139,7 @@ Share unit = `GET /d/<id>`. Anyone who can reach the host can open it.
 | `PR_VIZ_BASE_URL` | Override publish target | `host.json` → `baseUrl`, else `http://127.0.0.1:8080` |
 | `PR_VIZ_NO_OPEN` | Skip OS browser open after publish | unset (open) |
 | `PR_VIZ_INCLUDE_CONTEXT` | Outside-PR caller/callee blocks (`context: true`) | on — set `0` to omit |
+| `PR_VIZ_ALLOW_HOSTED_VIEWER` | After user consent: allow publishing a private PR to `pr-viz.com` | unset (ask in preflight when needed) |
 
 ## Shipped UI (web app, not the agent)
 

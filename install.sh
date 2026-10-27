@@ -4,8 +4,8 @@
 # Viewer: https://pr-viz.com
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/main/install.sh | bash
-#   PR_VIZ_SKILL_REF=v0.1.21 curl -fsSL .../install.sh | bash
+#   curl -fsSL .../v0.1.24/install.sh | PR_VIZ_SKILL_REF=v0.1.24 bash   # pin (env on bash)
+#   curl -fsSL .../main/install.sh | bash                               # mutable tip
 #   ./install.sh /path/to/project
 #   ./install.sh /path/to/project all          # force every IDE adapter
 #   ./install.sh /path/to/project cursor      # force one IDE

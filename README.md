@@ -33,6 +33,22 @@ image. This repository is the skill, so you can read it before you install it.
 
 From the project where you want the skill:
 
+Prefer a **pinned release** (env must be set on the `bash` side of the pipe):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/v0.1.24/install.sh | PR_VIZ_SKILL_REF=v0.1.24 bash
+```
+
+Or clone the tag and run locally (no remote pipe):
+
+```bash
+git clone --branch v0.1.24 --depth 1 https://github.com/krzysztofgibert/pr-viz-skill.git
+cd pr-viz-skill
+./install.sh /path/to/your/project
+```
+
+`main` tip (mutable — prefer a tag for production):
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/main/install.sh | bash
 ```
@@ -47,20 +63,6 @@ argument:
 ./install.sh /path/to/your/project cursor     # only Cursor
 ./install.sh /path/to/your/project all        # every IDE
 ./install.sh /path/to/your/project vscode     # VS Code / Copilot (.github/skills)
-```
-
-Pin a release:
-
-```bash
-PR_VIZ_SKILL_REF=v0.1.21 curl -fsSL https://raw.githubusercontent.com/krzysztofgibert/pr-viz-skill/v0.1.21/install.sh | bash
-```
-
-Or clone and install from the checkout:
-
-```bash
-git clone https://github.com/krzysztofgibert/pr-viz-skill.git
-cd pr-viz-skill
-./install.sh /path/to/your/project
 ```
 
 It does not copy this repo's CI workflows into your project. After install it
