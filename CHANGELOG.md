@@ -1,5 +1,20 @@
 # Release notes
 
+## 0.1.26 — 2026-10-27
+
+Matches viewer image `gprojekt/pr-viz:0.1.26`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #36 from hyurii/fix/ide-docs-tabs
+- Merge main into fix/ide-docs-tabs; keep IDE tabs and pin install to v0.1.26.
+- Merge pull request #39 from hyurii/fix/lcp-fonts-defer-demo
+- Defer home demo iframe and unblock fonts to improve LCP.
+- Add site nav and IDE tabs on /docs/* guide pages.
+
+
 ## 0.1.25 — 2026-10-27
 
 Matches viewer image `gprojekt/pr-viz:0.1.25`.
