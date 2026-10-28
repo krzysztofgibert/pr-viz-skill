@@ -1,5 +1,24 @@
 # Release notes
 
+## 0.1.28 — 2026-10-28
+
+Matches viewer image `gprojekt/pr-viz:0.1.28`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #3 from krzysztofgibert/release/soft-update-notices-0.1.28
+- Soft version notices only; scrub private-repo docs; refresh Cosign pub.
+- Merge pull request #2 from krzysztofgibert/fix/oidc-main-only-deploy
+- Clarify Deploy vs Release in the workflow matrix.
+- Keep deploy OIDC on main so IAM needs no wildcards.
+- Merge pull request #1 from krzysztofgibert/fix/deploy-oidc-environment
+- Add production environment for EC2 deploy OIDC.
+- Merge pull request #42 from hyurii/chore/lean-ci-and-migrate-owner
+- Lean everyday CI and retarget docs to krzysztofgibert/pr-viz.
+
+
 ## 0.1.27 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.27`.

@@ -1,5 +1,7 @@
 name: CI
 
+# Public repo = free Actions minutes. Full security suite on PRs (required to
+# merge). After merge to main, only the cheap layout + unit jobs re-run.
 on:
   pull_request:
     branches: [main]
@@ -66,6 +68,7 @@ jobs:
 
   shellcheck:
     name: ShellCheck
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -77,6 +80,7 @@ jobs:
 
   actionlint:
     name: Actionlint
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -89,6 +93,7 @@ jobs:
 
   security:
     name: Security scan
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -112,6 +117,7 @@ jobs:
 
   codeql:
     name: CodeQL
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -126,6 +132,7 @@ jobs:
   # (no package lock / OSS deps in this repo).
   snyk:
     name: Snyk
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -151,6 +158,7 @@ jobs:
   # Optional — set SONAR_TOKEN (+ SONAR_HOST_URL, and SONAR_ORGANIZATION for SonarCloud).
   sonarqube:
     name: SonarQube
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

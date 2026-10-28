@@ -7,7 +7,7 @@
  * Prints JSON: { ok, ask[], notice[], fetch, pr, server, github, updates }
  *   ok      true when nothing needs the user to continue
  *   ask     exact requests for the user (empty = ask nothing) — must wait
- *   notice  soft update hints — tell the user, do not wait
+ *   notice  soft update hints — mention at end of reply only; never block
  *   fetch   "gh" (GitHub CLI) | "rest" (public REST API) | null
  *   updates skill/viewer current vs latest (best-effort; may be null offline)
  */
@@ -160,42 +160,43 @@ if (health.status === 403 && /PR_VIZ_ALLOWED_HOSTS/.test(health.text)) {
   out.ask.push(
     `PR Viz isn't reachable at ${out.server.url}. Start it (on your machine: \`${DOCKER_RUN}\`), or tell me the URL of your team's PR Viz.`,
   )
-} else if (
-  out.server.viewerMinVersion &&
-  out.server.version &&
-  compareSemver(out.server.version, out.server.viewerMinVersion) < 0
-) {
-  out.ask.push(
-    `This skill pack expects viewer ${out.server.viewerMinVersion}+, but ${out.server.url} is running ${out.server.version}. Please update the image (\`${DOCKER_PULL}\`) or reinstall the skill from ${INSTALL_PAGE}, then tell me when done.`,
-  )
 }
 
-// Soft "newer available" checks — never block; fill notice[] + updates.
+// Soft "newer available" only — never put viewer/skill updates in ask[].
+// The agent mentions notice[] at the end of the reply; the diagram shows a banner.
 out.updates.viewer.current = out.server.version
 const [viewerLatest, skillLatest] = await Promise.all([
   fetchLatestViewerVersion(),
   fetchLatestSkillVersion(),
 ])
-out.updates.viewer.latest = viewerLatest
+const minViewer =
+  typeof out.server.viewerMinVersion === 'string'
+    ? out.server.viewerMinVersion.replace(/^v/, '')
+    : null
+// Prefer Hub latest; fall back to skill pack stamp when offline of Hub.
+let viewerHint = viewerLatest
+if (
+  minViewer &&
+  (!viewerHint || compareSemver(minViewer, viewerHint) > 0)
+) {
+  viewerHint = minViewer
+}
+out.updates.viewer.latest = viewerHint
 out.updates.skill.latest = skillLatest
 if (
   out.server.version &&
-  viewerLatest &&
-  compareSemver(viewerLatest, out.server.version) > 0
+  viewerHint &&
+  compareSemver(viewerHint, out.server.version) > 0
 ) {
   out.updates.viewer.updateAvailable = true
-  // Only soft-notice when not already a hard incompatible ask above.
-  const hardViewerAsk = out.ask.some((line) => /expects viewer/i.test(line))
-  if (!hardViewerAsk) {
-    out.notice.push(
-      `A newer PR Viz viewer is available (${out.server.version} → ${viewerLatest}). Update with \`${DOCKER_PULL}\` (or reinstall from ${INSTALL_PAGE}). You can continue with this map; the diagram will also show an update hint.`,
-    )
-  }
+  out.notice.push(
+    `Viewer update available (${out.server.version} → ${viewerHint}). \`${DOCKER_PULL}\` or ${INSTALL_PAGE}`,
+  )
 }
 if (skillVersion && skillLatest && compareSemver(skillLatest, skillVersion) > 0) {
   out.updates.skill.updateAvailable = true
   out.notice.push(
-    `A newer /pr-viz skill is available (${skillVersion} → ${skillLatest}). Reinstall from ${INSTALL_PAGE} when convenient. You can continue; the diagram will show an update hint.`,
+    `Skill update available (${skillVersion} → ${skillLatest}). Reinstall from ${INSTALL_PAGE}`,
   )
 }
 

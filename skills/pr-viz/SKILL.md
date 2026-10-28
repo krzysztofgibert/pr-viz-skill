@@ -54,10 +54,10 @@ node skills/pr-viz/scripts/preflight.mjs "$PR_URL"
   that isn't in `ask` (for example, don't ask for GitHub CLI on a public PR).
 - If `ask` is empty, ask nothing and continue. Use `pr` for owner / repo /
   number, `fetch` to pick how to read the PR, and `github.api` as the REST base.
-- **`notice` (soft updates):** if `notice` is non-empty, **tell the user those
-  lines** (viewer and/or skill behind latest) but **do not wait** — continue the
-  map. Copy `updates` into the diagram as top-level `tooling` (see below) so the
-  viewer can show an update banner.
+- **`notice` (soft updates only):** never block on viewer/skill versions — do
+  **not** ask the user to update the image or wait. Remember `notice` for the
+  **end** of your final reply (step 6). Always copy `updates` into diagram
+  `tooling` so the UI can show an update banner.
 - **Viewer privacy (preflight enforces):**
   - Public PR + any viewer → no extra question.
   - Private / non-anonymous PR + viewer host `pr-viz.com` → preflight asks for
@@ -109,11 +109,16 @@ Opens the **OS default browser** (not IDE Simple Browser). Pass `--no-open` or
 `PR_VIZ_NO_OPEN=1` / `true` / `TRUE` to skip.
 
 6. **Respond** — Output the returned URL in backticks plus a 1–2 sentence
-   summary of the severe findings (counts / top severities). If preflight had
-   `notice` items, mention the update hint in the same reply (one short line is
-   enough). Do not dump full JSON. Do not add a footer, signature, or
-   pr-viz.com line — the viewer draws that mark, and Export PNG bakes it into
-   the image.
+   summary of the severe findings (counts / top severities). Do not dump full
+   JSON. Do not add a footer, signature, or pr-viz.com line — the viewer draws
+   that mark, and Export PNG bakes it into the image.
+   - If preflight `notice` was non-empty, **after** the URL/summary add a short
+     styled footnote (blockquote), one line per notice — inform only, no
+     questions, do not wait:
+
+```markdown
+> **Update:** Viewer 0.1.26 → 0.1.27 available (`docker pull gprojekt/pr-viz:latest`).
+```
 
 Manual open if needed:
 
