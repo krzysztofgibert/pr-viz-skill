@@ -14,4 +14,4 @@ Before merge, CI must be green:
 - **CodeQL** — JavaScript in the skill scripts
 - **Snyk** / **SonarQube** — optional; run when `SNYK_TOKEN` / `SONAR_TOKEN` are set on this repo
 
-After you merge a publish PR, re-run **Publish skill** on `hyurii/pr-viz` (or push the matching `v*` tag on the skill repo) so the release tag and GitHub Release are created.
+After you merge a publish PR, re-run **Publish skill** on `krzysztofgibert/pr-viz` (or push the matching `v*` tag on the skill repo) so the release tag and GitHub Release are created.

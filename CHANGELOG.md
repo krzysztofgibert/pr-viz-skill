@@ -1,5 +1,21 @@
 # Release notes
 
+## 0.1.27 — 2026-10-28
+
+Matches viewer image `gprojekt/pr-viz:0.1.27`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #41 from hyurii/fix/viewer-vscode-map-meta
+- Merge pull request #40 from hyurii/fix/lighthouse-quick-wins
+- Surface soft viewer/skill update notices in preflight and on diagrams.
+- Fix incomplete IDE diagram maps: fill PR meta, estimate tokens, edge walkthrough.
+- Tune Lighthouse fixes: higher-quality poster JPEG and safer image cache TTL.
+- Fix Lighthouse wins: CSP-safe fonts, smaller poster, cache, diagram code-split.
+
+
 ## 0.1.26 — 2026-10-27
 
 Matches viewer image `gprojekt/pr-viz:0.1.26`.
