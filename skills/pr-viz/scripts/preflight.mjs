@@ -4,10 +4,12 @@
  * the user. Never reads, prints, or asks for GitHub tokens.
  *
  * Usage: node skills/pr-viz/scripts/preflight.mjs <github-pr-url>
- * Prints JSON: { ok, ask[], fetch, pr, server, github }
- *   ok     true when nothing needs the user
- *   ask    exact requests for the user (empty = ask nothing)
- *   fetch  "gh" (GitHub CLI) | "rest" (public REST API) | null
+ * Prints JSON: { ok, ask[], notice[], fetch, pr, server, github, updates }
+ *   ok      true when nothing needs the user to continue
+ *   ask     exact requests for the user (empty = ask nothing) — must wait
+ *   notice  soft update hints — tell the user, do not wait
+ *   fetch   "gh" (GitHub CLI) | "rest" (public REST API) | null
+ *   updates skill/viewer current vs latest (best-effort; may be null offline)
  */
 import { execFile } from 'node:child_process'
 import fs from 'node:fs'
@@ -15,12 +17,17 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parsePrUrl } from '../lib/parse-pr-url.mjs'
 import { compareSemver } from '../lib/semver.mjs'
+import {
+  fetchLatestSkillVersion,
+  fetchLatestViewerVersion,
+} from '../lib/latest-versions.mjs'
 import { envFlagTrue, isPrVizComViewer } from '../lib/viewer-host.mjs'
 
 const MIN_NODE_MAJOR = 18
 const DOCKER_RUN =
   'docker run --rm -p 8080:8080 -v pr-viz-data:/var/lib/pr-viz/diagrams gprojekt/pr-viz:latest'
 const INSTALL_PAGE = 'https://pr-viz.com/install'
+const DOCKER_PULL = 'docker pull gprojekt/pr-viz:latest'
 
 function run(cmd, args, timeoutMs = 15_000) {
   return new Promise((resolve) => {
@@ -92,9 +99,16 @@ function serverBase() {
 }
 
 const hostMeta = readHostMeta()
+const skillVersion =
+  typeof hostMeta.skillVersion === 'string'
+    ? hostMeta.skillVersion.replace(/^v/, '')
+    : typeof hostMeta.viewerMinVersion === 'string'
+      ? hostMeta.viewerMinVersion.replace(/^v/, '')
+      : null
 const out = {
   ok: false,
   ask: [],
+  notice: [],
   fetch: null,
   pr: null,
   server: {
@@ -103,6 +117,13 @@ const out = {
     version: null,
     viewerMinVersion:
       typeof hostMeta.viewerMinVersion === 'string' ? hostMeta.viewerMinVersion : null,
+  },
+  skill: {
+    version: skillVersion,
+  },
+  updates: {
+    viewer: { current: null, latest: null, updateAvailable: false },
+    skill: { current: skillVersion, latest: null, updateAvailable: false },
   },
   github: { api: null, public: null, gh: { installed: false, authenticated: false, canRead: null } },
 }
@@ -145,7 +166,36 @@ if (health.status === 403 && /PR_VIZ_ALLOWED_HOSTS/.test(health.text)) {
   compareSemver(out.server.version, out.server.viewerMinVersion) < 0
 ) {
   out.ask.push(
-    `This skill pack expects viewer ${out.server.viewerMinVersion}+, but ${out.server.url} is running ${out.server.version}. Please update the image (\`docker pull gprojekt/pr-viz:latest\`) or reinstall the skill from ${INSTALL_PAGE}, then tell me when done.`,
+    `This skill pack expects viewer ${out.server.viewerMinVersion}+, but ${out.server.url} is running ${out.server.version}. Please update the image (\`${DOCKER_PULL}\`) or reinstall the skill from ${INSTALL_PAGE}, then tell me when done.`,
+  )
+}
+
+// Soft "newer available" checks — never block; fill notice[] + updates.
+out.updates.viewer.current = out.server.version
+const [viewerLatest, skillLatest] = await Promise.all([
+  fetchLatestViewerVersion(),
+  fetchLatestSkillVersion(),
+])
+out.updates.viewer.latest = viewerLatest
+out.updates.skill.latest = skillLatest
+if (
+  out.server.version &&
+  viewerLatest &&
+  compareSemver(viewerLatest, out.server.version) > 0
+) {
+  out.updates.viewer.updateAvailable = true
+  // Only soft-notice when not already a hard incompatible ask above.
+  const hardViewerAsk = out.ask.some((line) => /expects viewer/i.test(line))
+  if (!hardViewerAsk) {
+    out.notice.push(
+      `A newer PR Viz viewer is available (${out.server.version} → ${viewerLatest}). Update with \`${DOCKER_PULL}\` (or reinstall from ${INSTALL_PAGE}). You can continue with this map; the diagram will also show an update hint.`,
+    )
+  }
+}
+if (skillVersion && skillLatest && compareSemver(skillLatest, skillVersion) > 0) {
+  out.updates.skill.updateAvailable = true
+  out.notice.push(
+    `A newer /pr-viz skill is available (${skillVersion} → ${skillLatest}). Reinstall from ${INSTALL_PAGE} when convenient. You can continue; the diagram will show an update hint.`,
   )
 }
 

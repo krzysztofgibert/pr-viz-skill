@@ -54,6 +54,10 @@ node skills/pr-viz/scripts/preflight.mjs "$PR_URL"
   that isn't in `ask` (for example, don't ask for GitHub CLI on a public PR).
 - If `ask` is empty, ask nothing and continue. Use `pr` for owner / repo /
   number, `fetch` to pick how to read the PR, and `github.api` as the REST base.
+- **`notice` (soft updates):** if `notice` is non-empty, **tell the user those
+  lines** (viewer and/or skill behind latest) but **do not wait** — continue the
+  map. Copy `updates` into the diagram as top-level `tooling` (see below) so the
+  viewer can show an update banner.
 - **Viewer privacy (preflight enforces):**
   - Public PR + any viewer → no extra question.
   - Private / non-anonymous PR + viewer host `pr-viz.com` → preflight asks for
@@ -104,10 +108,12 @@ node skills/pr-viz/scripts/publish-diagram.mjs "diagrams/<id>.json"
 Opens the **OS default browser** (not IDE Simple Browser). Pass `--no-open` or
 `PR_VIZ_NO_OPEN=1` / `true` / `TRUE` to skip.
 
-6. **Respond** — Output **only** the returned URL in backticks plus a 1–2
-   sentence summary of the severe findings (counts / top severities). Do not
-   dump full JSON. Do not add a footer, signature, or pr-viz.com line — the
-   viewer draws that mark, and Export PNG bakes it into the image.
+6. **Respond** — Output the returned URL in backticks plus a 1–2 sentence
+   summary of the severe findings (counts / top severities). If preflight had
+   `notice` items, mention the update hint in the same reply (one short line is
+   enough). Do not dump full JSON. Do not add a footer, signature, or
+   pr-viz.com line — the viewer draws that mark, and Export PNG bakes it into
+   the image.
 
 Manual open if needed:
 
@@ -192,15 +198,19 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
 - Prefer `diff: [{ kind, text, lineNumber? }]` over `snippet`
 - **Class + function on code blocks.** Set `className` + `functionName` from
   real identifiers.
-- **Always set `pr.headSha`** (from `headRefOid`). Set `pr.branch` when known.
+- **Always set `pr` identity fields** from the PR fetch (not only the URL):
+  `pr.owner`, `pr.repo`, `pr.number`, `pr.title`, and `pr.headSha` (from
+  `headRefOid`). Set `pr.branch` when known. Missing owner/repo/number makes the
+  viewer show `/#0`.
 - **Overview panel**
   - `pr.description` = GitHub PR body (strip bot/release-note noise)
   - top-level `summary` = plain-language AI analysis (verdict + what still needs a human)
 - **Code comments.** Review-zone: `comments: [{ lineNumber?, text }]`. Cleared
   may omit when trivial.
-- `issue.severity` when risky: `blocker` | `important` (UI: **High**) | `nit` | `info`.
-  Always set lines: `issue.lineNumber` or `issue.startLine` + `issue.endLine`
-  (new-file numbers).
+- **Issues use `summary` (not `text`).** `issue.summary` is the one-line finding
+  shown in the INFO panel. `issue.severity` when risky: `blocker` |
+  `important` (UI: **High**) | `nit` | `info`. Always set lines:
+  `issue.lineNumber` or `issue.startLine` + `issue.endLine` (new-file numbers).
 - **Call-graph context.** When `PR_VIZ_INCLUDE_CONTEXT` is unset/`1`, add
   outside-PR caller/callee blocks (`context: true`, review zone, truthful HEAD
   snippets, `calls` / `depends_on` + line anchors) **only** after finding them
@@ -225,6 +235,18 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
 }
 ```
 
+- **Always set `tooling`** from preflight `updates` (so the diagram can show
+  update availability even offline of `/api/updates`):
+
+```json
+"tooling": {
+  "skillVersion": "<updates.skill.current or host.json skillVersion>",
+  "skillLatest": "<updates.skill.latest or omit>",
+  "viewerVersion": "<updates.viewer.current / server.version>",
+  "viewerLatest": "<updates.viewer.latest or omit>"
+}
+```
+
 - **Always set `analysis`** with the real model for this session:
 
 ```json
@@ -233,7 +255,7 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
   "provider": "<optional, e.g. cursor>",
   "ide": "<the IDE you are running in: cursor | vscode | windsurf | jetbrains | zed | claude-code | other>",
   "analyzedAt": "<ISO timestamp>",
-  "usage": { "reviewTokens": 0, "vizTokens": 0 }
+  "usage": { "reviewTokens": 12000, "vizTokens": 900 }
 }
 ```
 
@@ -241,8 +263,11 @@ Never ask for, accept, or type that token. Do not run `post-review.mjs` or
 
 - `reviewTokens` — anything a review-code skill would already do
 - `vizTokens` — only diagram-only extras (`explainPrompt`, block/edge ids, graph
-  wiring). Prefer under-counting `vizTokens` when unsure. Do **not** invent
-  precise token counts — rough estimates only (or `0` if unknown).
+  wiring). Prefer under-counting `vizTokens` when unsure.
+- If the host exposes real session token counts, put them here (do not mark
+  `estimated`). Otherwise omit `usage` or leave zeros — the viewer always fills
+  a size-based estimate and labels it `(est.)`. Never publish precise invented
+  counts as if they were measured.
 
 ## Example reply
 
