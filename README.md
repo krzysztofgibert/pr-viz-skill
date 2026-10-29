@@ -20,9 +20,13 @@ Live sample: [pr-viz.com/d/sample](https://pr-viz.com/d/sample) · [MP4 on Pages
 | Docker image | [hub.docker.com/r/gprojekt/pr-viz](https://hub.docker.com/r/gprojekt/pr-viz) |
 | This repository | the skill for your IDE |
 
-The map is a web page, not a Mermaid diagram in the chat. The model that reads
-the pull request is the one already configured in your IDE. Diagram JSON,
-including short code excerpts, is sent only to the viewer in
+The map is a web page, not a Mermaid diagram in the chat. After `/pr-viz`, the
+skill opens your **system** browser (Chrome/Safari/Edge). Cursor and VS Code
+often open clicks on `localhost` / `127.0.0.1` inside the IDE — ignore that and
+use the OS window, or paste the URL from the chat reply.
+
+The model that reads the pull request is the one already configured in your
+IDE. Diagram JSON, including short code excerpts, is sent only to the viewer in
 [`skills/pr-viz/host.json`](skills/pr-viz/host.json). That file points at
 `https://pr-viz.com` until you change it.
 

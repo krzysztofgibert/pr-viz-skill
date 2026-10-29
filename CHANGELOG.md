@@ -1,5 +1,17 @@
 # Release notes
 
+## 0.1.29 — 2026-10-29
+
+Matches viewer image `gprojekt/pr-viz:0.1.29`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #4 from krzysztofgibert/fix/show-pr-workflows
+- Load GitHub workflow results onto each diagram.
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.

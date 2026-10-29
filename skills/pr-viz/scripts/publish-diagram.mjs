@@ -103,14 +103,38 @@ console.log(url)
 if (!noOpen && url) {
   try {
     openExternal(url)
+    // Cursor/VS Code often capture clicks on localhost/127.0.0.1 into Simple
+    // Browser. The skill opens the OS default browser instead — that is the
+    // intended surface. Agents must not tell users to click the chat link.
+    if (isLoopbackUrl(url)) {
+      console.error(
+        'Opened in your system browser. IDE chat clicks on localhost may open Simple Browser — use the OS window or paste the URL.',
+      )
+    }
   } catch (err) {
     console.error(`Could not open browser: ${err instanceof Error ? err.message : err}`)
   }
 }
 
+function isLoopbackUrl(target) {
+  try {
+    const host = new URL(target).hostname.toLowerCase()
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '[::1]' ||
+      host === '::1' ||
+      host.endsWith('.localhost')
+    )
+  } catch {
+    return false
+  }
+}
+
 function openExternal(target) {
+  // Always the OS handler — never the IDE Simple Browser / Browser Tab.
   if (process.platform === 'darwin') {
-    execFileSync('open', [target], { stdio: 'ignore' })
+    execFileSync('/usr/bin/open', [target], { stdio: 'ignore' })
     return
   }
   if (process.platform === 'win32') {
