@@ -122,11 +122,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with:
           languages: javascript
           build-mode: none
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
 
   # Optional — set SNYK_TOKEN on krzysztofgibert/pr-viz-skill. Uses Snyk Code
   # (no package lock / OSS deps in this repo).
