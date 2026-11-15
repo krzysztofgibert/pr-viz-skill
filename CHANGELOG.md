@@ -1,5 +1,19 @@
 # Release notes
 
+## 0.1.30 — 2026-11-15
+
+Matches viewer image `gprojekt/pr-viz:0.1.30`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #6 from krzysztofgibert/release/faster-maps-and-walkthrough
+- Open the review map when the judgment is ready, and keep the walkthrough until its words change.
+- Merge pull request #5 from krzysztofgibert/release/catalog-seo-local-viewer
+- Ship the diagram catalog, a personal local viewer, and search copy.
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
