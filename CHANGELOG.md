@@ -1,5 +1,17 @@
 # Release notes
 
+## 0.1.31 — 2026-11-15
+
+Matches viewer image `gprojekt/pr-viz:0.1.31`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #7 from krzysztofgibert/release/phone-layout
+- Fit the site and the sample tour on a phone without changing the desktop layout.
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
