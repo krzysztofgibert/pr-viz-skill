@@ -1,5 +1,17 @@
 # Release notes
 
+## 0.1.32 — 2026-11-16
+
+Matches viewer image `gprojekt/pr-viz:0.1.32`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Merge pull request #8 from krzysztofgibert/release/phone-sheets
+- Tighten the phone layout so panels, chips, and the walkthrough stay usable.
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
