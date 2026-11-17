@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.33 — 2026-11-17
+
+Matches viewer image `gprojekt/pr-viz:0.1.33`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Bring the missing phone tools onto the diagram without changing desktop. (#9)
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
