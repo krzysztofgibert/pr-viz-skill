@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.40 — 2026-11-18
+
+Matches viewer image `gprojekt/pr-viz:0.1.40`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Keep the home-screen tour on the desktop layout. (#16)
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
