@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.35 — 2026-11-18
+
+Matches viewer image `gprojekt/pr-viz:0.1.35`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Copy the npm config into the image before installing. (#11)
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
