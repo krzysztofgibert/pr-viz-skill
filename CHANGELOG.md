@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.37 — 2026-11-18
+
+Matches viewer image `gprojekt/pr-viz:0.1.37`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Let a finger drag on a card pan the map, and explain why IDE actions are off. (#13)
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
