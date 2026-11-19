@@ -8,6 +8,7 @@
  *
  * Env:
  *   PR_VIZ_BASE_URL=http://127.0.0.1:8080   (or https://pr-viz.example.com)
+ *   skills/pr-viz/host.local.json           (personal viewer; wins over host.json)
  *   PR_VIZ_NO_OPEN=1                        (skip opening the system browser)
  *
  * Requires Node.js 18+ (native fetch).
@@ -15,7 +16,7 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolveViewerBase } from '../lib/viewer-host.mjs'
 
 const args = process.argv.slice(2).map((a) => String(a).trim()).filter(Boolean)
 const noOpenFlag = args.includes('--no-open')
@@ -31,26 +32,7 @@ if (!file) {
   process.exit(1)
 }
 
-function bundledHostUrl() {
-  try {
-    const hostFile = path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      '..',
-      'host.json',
-    )
-    const raw = JSON.parse(fs.readFileSync(hostFile, 'utf8'))
-    const url = typeof raw?.baseUrl === 'string' ? raw.baseUrl.trim() : ''
-    return url ? url.replace(/\/+$/, '') : ''
-  } catch {
-    return ''
-  }
-}
-
-const base = (
-  (process.env.PR_VIZ_BASE_URL || '').trim() ||
-  bundledHostUrl() ||
-  'http://127.0.0.1:8080'
-).replace(/\/+$/, '')
+const base = resolveViewerBase()
 
 let payload
 try {
@@ -103,14 +85,38 @@ console.log(url)
 if (!noOpen && url) {
   try {
     openExternal(url)
+    // Cursor/VS Code often capture clicks on localhost/127.0.0.1 into Simple
+    // Browser. The skill opens the OS default browser instead — that is the
+    // intended surface. Agents must not tell users to click the chat link.
+    if (isLoopbackUrl(url)) {
+      console.error(
+        'Opened in your system browser. IDE chat clicks on localhost may open Simple Browser — use the OS window or paste the URL.',
+      )
+    }
   } catch (err) {
     console.error(`Could not open browser: ${err instanceof Error ? err.message : err}`)
   }
 }
 
+function isLoopbackUrl(target) {
+  try {
+    const host = new URL(target).hostname.toLowerCase()
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '[::1]' ||
+      host === '::1' ||
+      host.endsWith('.localhost')
+    )
+  } catch {
+    return false
+  }
+}
+
 function openExternal(target) {
+  // Always the OS handler — never the IDE Simple Browser / Browser Tab.
   if (process.platform === 'darwin') {
-    execFileSync('open', [target], { stdio: 'ignore' })
+    execFileSync('/usr/bin/open', [target], { stdio: 'ignore' })
     return
   }
   if (process.platform === 'win32') {
