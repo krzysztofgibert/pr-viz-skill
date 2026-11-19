@@ -15,9 +15,7 @@
  *   press "Submit review" on GitHub.
  */
 import { spawn } from 'node:child_process'
-import fs from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolveViewerBase } from '../lib/viewer-host.mjs'
 
 const MUTATION_GAP_MS = 1000
 const NAME_RE = /^[A-Za-z0-9_.-]{1,100}$/
@@ -29,18 +27,7 @@ function fail(message, code = 1) {
 }
 
 function configuredBase() {
-  const fromEnv = String(process.env.PR_VIZ_BASE_URL || '').trim()
-  if (fromEnv) return fromEnv.replace(/\/+$/, '')
-  try {
-    const hostFile = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'host.json')
-    const raw = JSON.parse(fs.readFileSync(hostFile, 'utf8'))
-    if (typeof raw?.baseUrl === 'string' && raw.baseUrl.trim()) {
-      return raw.baseUrl.trim().replace(/\/+$/, '')
-    }
-  } catch {
-    /* no host.json */
-  }
-  return 'http://127.0.0.1:8080'
+  return resolveViewerBase()
 }
 
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])

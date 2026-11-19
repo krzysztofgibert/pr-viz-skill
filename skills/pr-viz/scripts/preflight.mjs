@@ -21,7 +21,7 @@ import {
   fetchLatestSkillVersion,
   fetchLatestViewerVersion,
 } from '../lib/latest-versions.mjs'
-import { envFlagTrue, isPrVizComViewer } from '../lib/viewer-host.mjs'
+import { envFlagTrue, isPrVizComViewer, resolveViewerBase } from '../lib/viewer-host.mjs'
 
 const MIN_NODE_MAJOR = 18
 const DOCKER_RUN =
@@ -84,18 +84,7 @@ function apiBase(host) {
 }
 
 function serverBase() {
-  const fromEnv = String(process.env.PR_VIZ_BASE_URL || '').trim()
-  if (fromEnv) return fromEnv.replace(/\/+$/, '')
-  try {
-    const hostFile = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'host.json')
-    const raw = JSON.parse(fs.readFileSync(hostFile, 'utf8'))
-    if (typeof raw?.baseUrl === 'string' && raw.baseUrl.trim()) {
-      return raw.baseUrl.trim().replace(/\/+$/, '')
-    }
-  } catch {
-    /* no host.json */
-  }
-  return 'http://127.0.0.1:8080'
+  return resolveViewerBase()
 }
 
 const hostMeta = readHostMeta()
