@@ -1,3 +1,34 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const packDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+const FALLBACK_BASE = 'http://127.0.0.1:8080'
+
+function readBaseUrl(file) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(file, 'utf8'))
+    const url = typeof raw?.baseUrl === 'string' ? raw.baseUrl.trim() : ''
+    return url ? url.replace(/\/+$/, '') : ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Where /pr-viz publishes.
+ * PR_VIZ_BASE_URL, then host.local.json (personal, not shipped), then host.json.
+ */
+export function resolveViewerBase(env = process.env, dir = packDir) {
+  const fromEnv = String(env.PR_VIZ_BASE_URL || '').trim()
+  if (fromEnv) return fromEnv.replace(/\/+$/, '')
+  return (
+    readBaseUrl(path.join(dir, 'host.local.json')) ||
+    readBaseUrl(path.join(dir, 'host.json')) ||
+    FALLBACK_BASE
+  )
+}
+
 /** Public SaaS viewer only — self-hosted hosts never match. */
 export function isPrVizComViewer(baseUrl) {
   try {
