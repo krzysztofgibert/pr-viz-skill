@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.1.41 — 2026-11-19
+
+Matches viewer image `gprojekt/pr-viz:0.1.41`.
+
+- Viewer: https://pr-viz.com
+- Sample map: https://pr-viz.com/d/sample
+- Image: https://hub.docker.com/r/gprojekt/pr-viz
+
+- Make the sample diagram button easier to notice on the home page. (#17)
+
+
 ## 0.1.28 — 2026-10-28
 
 Matches viewer image `gprojekt/pr-viz:0.1.28`.
